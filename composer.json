@@ -1,0 +1,31 @@
+{
+  "name": "gugglegum/retry-helper",
+  "description": "Automatically repeats the code section if an error occurs (with delays, logging, etc.)",
+  "type": "library",
+  "keywords": ["error handler", "retry", "repeat", "several attempts"],
+  "license": "MIT",
+  "authors": [
+    {
+      "name": "Paul Melekhov",
+      "email": "gugglegum@gmail.com"
+    }
+  ],
+  "autoload": {
+    "psr-4": {
+      "gugglegum\\RetryHelper\\": "src/"
+    }
+  },
+  "require": {
+    "php": ">=8.0",
+    "psr/log": "*"
+  },
+  "autoload-dev": {
+    "psr-4": {
+      "gugglegum\\RetryHelper\\tests\\": "tests/"
+    }
+  },
+  "require-dev": {
+    "phpunit/phpunit": "*",
+    "guzzlehttp/guzzle": ">=7.4"
+  }
+}
