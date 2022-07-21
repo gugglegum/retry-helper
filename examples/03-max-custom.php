@@ -2,14 +2,7 @@
 
 require_once __DIR__  . '/../vendor/autoload.php';
 
-class EchoLogger extends \Psr\Log\AbstractLogger {
-    public function log($level, string|Stringable $message, array $context = []): void
-    {
-        echo "[" . strtoupper($level) . "] {$message}\n";
-    }
-}
-
-$request = new \GuzzleHttp\Psr7\Request("GET", "https://example.com");
+$request = new \GuzzleHttp\Psr7\Request("GET", "https://example3.com");
 
 try {
     /** @var \Psr\Http\Message\ResponseInterface $response */
@@ -24,7 +17,11 @@ try {
         ->setOnFailure(function (Throwable $e, int $attempt): void {
             throw new RuntimeException($e->getMessage() . " (attempt " . $attempt . ")", $e->getCode(), $e);
         })
-        ->setLogger(new EchoLogger())
+        ->setLogger(new class extends \Psr\Log\AbstractLogger {
+            public function log($level, string|Stringable $message, array $context = []): void {
+                echo "[" . strtoupper($level) . "] {$message}\n";
+            }
+        })
         ->execute(function () use ($request) {
             return (new \GuzzleHttp\Client())->send($request);
         }, 10);

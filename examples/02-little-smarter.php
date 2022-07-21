@@ -4,6 +4,7 @@ require_once __DIR__  . '/../vendor/autoload.php';
 
 $request = new \GuzzleHttp\Psr7\Request("GET", "https://example.com");
 
+/** @var \Psr\Http\Message\ResponseInterface $response */
 $response = (new \gugglegum\RetryHelper\RetryHelper())
     ->setIsTemporaryException(function($e): bool {
         return $e instanceof \GuzzleHttp\Exception\ServerException
