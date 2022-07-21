@@ -2,7 +2,7 @@
 
 require_once __DIR__  . '/../vendor/autoload.php';
 
-$request = new \GuzzleHttp\Psr7\Request("GET", "https://example3.com");
+$request = new \GuzzleHttp\Psr7\Request("GET", "https://example.com");
 
 try {
     /** @var \Psr\Http\Message\ResponseInterface $response */
