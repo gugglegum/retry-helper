@@ -19,7 +19,7 @@ echo $response->getBody()->getContents() . "\n";
 
 The code that may fail here is wrapped into anonymous function and passed as the first argument of `execute()` method. The second argument defines maximum number of attempts (10). In most cases this code will succeed on first attempt, so the return value of anonymous function will be forwarded to return value of `execute()` method and immediately stored in `$response` variable. But if you have unstable Internet connection, it may take several attempts to get response. If your Internet completely doesn't work or website is down, it will stop performing attempts after reaching maximum number of attempts and throw an exception caught on the last attempt.
 
-Since this is the simplest example, it uses some default behaviour which we will override in the next examples. By default, it will retry on every error (exception), no matter what kind of error. In some cases this may be overkill. For example, if you have an "authentication error", there's not much reason to try again and again with the same credentials. Actually, you don't need to try again if you receive HTTP 4xx status code. All 400-th statuses means that problem is on client side (wrong password, no access, wrong URL, etc.) Thereby we can divide all errors on "temporary" (which may go away on next try) and "permanent" (which will not disappear). The `RetryHelper` allow you to define callback function which will be called after each unsuccessful attempt and will decide is this error (exception) is temporary or not. If it returns `true` (error is temporary) then new attempt will be performed (except if maximum number of attempts reached). So let's take look on the next example which contains this special logic:
+Since this is the simplest example, it uses some default behaviour which we will override in the next examples. By default, it will retry on every error (exception), no matter what kind of error. In some cases this may be overkill. For example, if you have an "authentication error", there's not much reason to try again and again with the same credentials. Generally, you don't need to try again if you receive HTTP 4xx status code. All 400-th statuses means that problem is on client side (wrong password, no access, wrong URL, etc.) Thereby we can divide all errors on "temporary" (which may go away on next try) and "permanent" (which will not disappear). The `RetryHelper` allows you to define callback function which will be called after each unsuccessful attempt and will decide is this error (exception) is temporary or not. If it returns `true` (error is temporary) then new attempt will be performed (except if maximum number of attempts reached). So let's take look on the next example which contains this special logic:
 
 ```php
 $request = new \GuzzleHttp\Psr7\Request("GET", "https://example.com");
@@ -81,11 +81,20 @@ try {
 }
 ```
 
-If you need to use logger inside
+If you need the logger inside anonymous function, you can pass it via `use ($logger)` syntax. If you don't want to create a full-fledged logger class for single use, you can use anonymous class (which is actually an object):
+
+```php
+$logger = new class extends \Psr\Log\AbstractLogger {
+    public function log($level, string|Stringable $message, array $context = []): void
+    {
+        echo "[" . strtoupper($level) . "] {$message}\n";
+    }
+};
+```
 
 ## Callback functions
 
-There are 3 types of callback functions that you can provide in `RetryHelper`. Here are the arguments they receive and what values they should return.
+There are 3 types of callback functions that you can provide in `RetryHelper`. Here are the arguments they receive and the values they should return.
 
 ### The `setIsTemporaryException()` method
 
@@ -93,7 +102,7 @@ There are 3 types of callback functions that you can provide in `RetryHelper`. H
 function(Throwable $e): bool { ... }
 ```
 
-The function is called after each failed attempt and is used to determine whether to continue the attempts.
+The function is called after each failed attempt and is used to determine whether to continue the attempts. By default, this function always returns `true`.
 
 #### Arguments
 
