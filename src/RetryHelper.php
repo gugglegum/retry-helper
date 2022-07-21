@@ -28,7 +28,8 @@ class RetryHelper
     private $delayBeforeNextAttempt;
 
     /**
-     *
+     * Callback function that is executed at the end if all attempts failed (last error was not temporary or max
+     * attempts limit reached).
      *
      * @var callable
      */
@@ -53,9 +54,9 @@ class RetryHelper
 
     /**
      * Executes some user-defined callback function $action 1 time if all is OK and several times (up to $maxAttempts)
-     * if an exception is throwing until it will be executed without exception. When exception was thrown optional
-     * callback function $isTemporaryException receives exception as an argument and returns TRUE if error is
-     * temporary and this is reasonable to continue attempts. On false attempts will be stopped before $maxAttempts
+     * if an exception is throwing until it will be executed without exception. When exception is thrown optional
+     * callback function $this->isTemporaryException receives exception as an argument and returns TRUE if an error is
+     * temporary and this is reasonable to continue attempts. On false - attempts will be stopped before $maxAttempts
      * limit reached.
      *
      * @param callable $action      Callback function with main action to perform
@@ -125,6 +126,11 @@ class RetryHelper
     {
         $this->delayBeforeNextAttempt = $delayBeforeNextAttempt;
         return $this;
+    }
+
+    public function getOnFailure(): callable
+    {
+        return $this->onFailure;
     }
 
     /**
