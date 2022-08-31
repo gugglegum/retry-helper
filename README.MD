@@ -25,7 +25,7 @@ Since this is the simplest example, it uses some default behaviour which we will
 $request = new \GuzzleHttp\Psr7\Request("GET", "https://example.com");
 
 $response = (new \gugglegum\RetryHelper\RetryHelper())
-    ->setIsTemporaryException(function($e): bool {
+    ->setIsTemporaryException(function(\Throwable $e): bool {
         return $e instanceof \GuzzleHttp\Exception\ServerException
             || $e instanceof \GuzzleHttp\Exception\ConnectException;
     })
@@ -47,36 +47,35 @@ Finally, you may want to show in the log or stdout messages about all failed att
 Here's an example that implements all the features mentioned above, plus try-catch for an exception that will be thrown if the maximum number of attempts is reached or if the thrown exception is not considered temporary. In addition, this example makes an exception for connection errors related to "Could not resolve host". You can see such an error if the domain name does not exist. So in this example, the script will stop retries after this error.
 
 ```php
-class EchoLogger extends \Psr\Log\AbstractLogger {
-    public function log($level, string|Stringable $message, array $context = []): void
-    {
-        echo "[" . strtoupper($level) . "] {$message}\n";
-    }
-}
 
 $request = new \GuzzleHttp\Psr7\Request("GET", "https://example.com");
 
 try {
     /** @var \Psr\Http\Message\ResponseInterface $response */
     $response = (new \gugglegum\RetryHelper\RetryHelper())
-        ->setIsTemporaryException(function ($e): bool {
+        ->setIsTemporaryException(function(\Throwable $e): bool {
             return $e instanceof \GuzzleHttp\Exception\ServerException
                 || ($e instanceof \GuzzleHttp\Exception\ConnectException && !str_contains($e->getMessage(), 'Could not resolve host'));
         })
-        ->setDelayBeforeNextAttempt(function (int $attempt): float|int {
+        ->setDelayBeforeNextAttempt(function(int $attempt): float|int {
             return $attempt * 5;
         })
-        ->setOnFailure(function (Throwable $e, int $attempt): void {
+        ->setOnFailure(function(\Throwable $e, int $attempt): void {
             throw new RuntimeException($e->getMessage() . " (attempt " . $attempt . ")", $e->getCode(), $e);
         })
-        ->setLogger(new EchoLogger())
-        ->execute(function () use ($request) {
+        ->setLogger(new class extends \Psr\Log\AbstractLogger {
+            public function log($level, string|Stringable $message, array $context = []): void
+            {
+                echo "[" . strtoupper($level) . "] {$message}\n";
+            }
+        })
+        ->execute(function() use ($request) {
             return (new \GuzzleHttp\Client())->send($request);
         }, 10);
 
     echo $response->getBody()->getContents() . "\n";
 
-} catch (Throwable $e) {
+} catch (\Throwable $e) {
     echo "\nExiting due to an error: {$e->getMessage()}\n";
 }
 ```
@@ -99,7 +98,7 @@ There are 3 types of callback functions that you can provide in `RetryHelper`. H
 ### The `setIsTemporaryException()` method
 
 ```php
-function(Throwable $e): bool { ... }
+function(\Throwable $e): bool { ... }
 ```
 
 The function is called after each failed attempt and is used to determine whether to continue the attempts. By default, this function always returns `true`.
@@ -131,7 +130,7 @@ Returns the `float` or `int` value with number of seconds.
 ### The `setOnFailure()` method
 
 ```php
-function(Throwable $e, int $attempt): void {}
+function(\Throwable $e, int $attempt): void {}
 ```
 
 The function is called if all attempts failed: maximum number of attempts reached, or we got an exception which is considered not temporary (by callback function defined in `setIsTemporaryException()`).
