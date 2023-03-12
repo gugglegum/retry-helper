@@ -43,7 +43,7 @@ To prevent overloading the remote server `RetryHelper` makes a delay between att
 
 You may also need a special event handler when it ended unsuccessfully, i.e. when either the attempts have ended or the last attempt was permanent (not temporary). Set it with `setOnFailure()` by passing a callback function to it. When called, it will get an exception object and an attempt number, i.e. the signature of callback function is `function(\Throwable $e, int $attempt): void`. In this handler, you can perform some action and/or throw a new exception with a modified message and/or code (see the next example).
 
-Finally, you may want to show in the log or STDOUT/STDERR stream the messages about all failed attempts: what exceptions occurred, numbers of attempts, delay duration. In this case `RetryHelper` supports the standard PHP-FIG/PSR-3 interface for logging. Using the `setLogger()` method you can define you custom logger (which should only implement `\Psr\Log\LoggerInterface`) and it will receive messages during performing attempts. If the code is successful on the first attempt, no messages will be sent to the logger. By default, there is no logging.
+Finally, you may want to show in the log or STDOUT/STDERR stream the messages about all failed attempts: what exceptions occurred, numbers of attempts, delay duration. In this case `RetryHelper` supports the standard PHP-FIG/PSR-3 interface for logging. Using the `setLogger()` method you can define you custom logger (which should only implement `\Psr\Log\LoggerInterface`) and it will receive messages during performing attempts. If the code executed successfully on the first attempt, no messages will be sent to the logger. By default, there is no logging.
 
 Here's an example that implements all the features mentioned above, plus try-catch for an exception that will be thrown if the maximum number of attempts is reached or if the thrown exception is not considered temporary. In addition, this example makes an exception for connection errors related to "Could not resolve host". You can see such an error if the domain name does not exist. So in this example, the script will stop retries after this error. This is just an example to show the flexibility of the RetryHelper.
 
@@ -80,7 +80,7 @@ try {
 }
 ```
 
-If you need the logger inside your main function, you can pass it via `use ($logger)` syntax. If you don't want to create a full-fledged logger class for single use, you can use anonymous class (which is actually an object):
+If you need the logger inside your main function, you can pass it via `use ($logger)` syntax. If you don't want to create a full-fledged logger class for single use, you can use object of anonymous class:
 
 ```php
 $logger = new class extends \Psr\Log\AbstractLogger {
