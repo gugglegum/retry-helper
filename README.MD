@@ -141,6 +141,8 @@ function(\Throwable $e, int $attempt): void { ... }
 
 The function is called if all attempts failed: maximum number of attempts reached, or we got an exception which is considered not temporary (by callback function defined in `setIsTemporaryException()`).
 
+Here you can print some text and close the network connection. You can also throw a specific exception here, but if not, the original exception caught inside the `execute()` method will be automatically rethrown.
+
 #### Arguments
 
 1. `$e` is an exception object caught on last attempt
